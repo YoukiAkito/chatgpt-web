@@ -611,7 +611,9 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Flex容器，主轴方向为垂直列 -->
   <div class="flex flex-col w-full h-full">
+    <!-- 头部组件 -->
     <HeaderComponent
       v-if="isMobile"
       :using-context="usingContext"
@@ -619,21 +621,27 @@ onUnmounted(() => {
       @export="handleExport" @toggle-using-context="handleToggleUsingContext"
       @toggle-show-prompt="showPrompt = true"
     />
+
+    <!-- 主要内容区域 -->
     <main class="flex-1 overflow-hidden">
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
+        <!-- 图片包装器 -->
         <div
           id="image-wrapper"
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
           :class="[isMobile ? 'p-2' : 'p-4']"
         >
+          <!-- 加载中的旋转器 -->
           <NSpin :show="firstLoading">
             <template v-if="!dataSources.length">
+              <!-- 无数据时的占位内容 -->
               <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
                 <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
-                <span>Aha~</span>
+                <span>Ai助理——茉莉</span>
               </div>
             </template>
             <template v-else>
+              <!-- 显示聊天消息 -->
               <div>
                 <Message
                   v-for="(item, index) of dataSources"
@@ -649,6 +657,7 @@ onUnmounted(() => {
                   @delete="handleDelete(index)"
                   @response-history="(ev) => onResponseHistory(index, ev)"
                 />
+                <!-- 粘性底部区域用于停止响应 -->
                 <div class="sticky bottom-0 left-0 flex justify-center">
                   <NButton v-if="loading" type="warning" @click="handleStop">
                     <template #icon>
@@ -663,31 +672,39 @@ onUnmounted(() => {
         </div>
       </div>
     </main>
+
+    <!-- 页脚部分 -->
     <footer :class="footerClass">
       <div class="w-full max-w-screen-xl m-auto">
         <NSpace vertical>
+          <!-- 页脚按钮 -->
           <div class="flex items-center space-x-2">
+            <!-- 清除按钮 -->
             <HoverButton @click="handleClear">
               <span class="text-xl text-[#4f555e] dark:text-white">
                 <SvgIcon icon="ri:delete-bin-line" />
               </span>
             </HoverButton>
+            <!-- 导出按钮（仅在桌面上可见） -->
             <HoverButton v-if="!isMobile" @click="handleExport">
               <span class="text-xl text-[#4f555e] dark:text-white">
                 <SvgIcon icon="ri:download-2-line" />
               </span>
             </HoverButton>
+            <!-- 提示按钮（仅在桌面上可见） -->
             <HoverButton v-if="!isMobile" @click="showPrompt = true">
               <span class="text-xl text-[#4f555e] dark:text-white">
                 <IconPrompt class="w-[20px] m-auto" />
               </span>
             </HoverButton>
+            <!-- 切换包含上下文按钮（仅在桌面上可见） -->
             <HoverButton v-if="!isMobile" :tooltip="usingContext ? '点击停止包含上下文' : '点击开启包含上下文'" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }" @click="handleToggleUsingContext">
               <span class="text-xl">
                 <SvgIcon icon="ri:chat-history-line" />
               </span>
               <span style="margin-left:.25em">{{ usingContext ? '包含上下文' : '不含上下文' }}</span>
             </HoverButton>
+            <!-- 选择聊天模型的下拉列表 -->
             <NSelect
               style="width: 250px"
               :value="currentChatModel"
@@ -696,16 +713,20 @@ onUnmounted(() => {
               @update-value="(val) => handleSyncChatModel(val)"
             />
           </div>
+
+          <!-- 输入和发送按钮区域 -->
           <div class="flex items-center justify-between space-x-2">
+            <!-- 自动完成输入提示 -->
             <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
               <template #default="{ handleInput, handleBlur, handleFocus }">
+                <!-- 输入区域 -->
                 <NInput
                   ref="inputRef"
                   v-model:value="prompt"
                   :disabled="!!authStore.session?.auth && !authStore.token"
                   type="textarea"
                   :placeholder="placeholder"
-                  :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"
+                  :autosize="{ minRows: isMobile ? 1 : 1, maxRows: isMobile ? 4 : 8 }"
                   @input="handleInput"
                   @focus="handleFocus"
                   @blur="handleBlur"
@@ -713,6 +734,7 @@ onUnmounted(() => {
                 />
               </template>
             </NAutoComplete>
+            <!-- 发送按钮 -->
             <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
               <template #icon>
                 <span class="dark:text-black">
@@ -724,6 +746,8 @@ onUnmounted(() => {
         </NSpace>
       </div>
     </footer>
+
+    <!-- 提示词组件 -->
     <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
   </div>
 </template>
